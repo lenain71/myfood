@@ -22,11 +22,11 @@ namespace myfoodapp.Core.Business
 
             decimal capt = 0;
 
-            for(int i = 0; i < 2; i++)
+            for(int i = 0; i < 20; i++)
             {
                 Task.Run(async() => 
                     {  
-                        await Task.Delay(1000);
+                        //await Task.Delay(1000);
                         capt = (decimal)to.Temperature;
                         Console.WriteLine(capt);
                         await Task.Delay(1000);
@@ -47,7 +47,7 @@ namespace myfoodapp.Core.Business
 
             DateTime date = DateTime.Now;
 
-            for(int i = 0; i < 2; i++)
+            for(int i = 0; i < 20; i++)
             {
                 Task.Run(async() => 
                     {
