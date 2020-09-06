@@ -138,7 +138,7 @@ namespace myfoodapp.Hub.Migrations
             context.ProductionLevels.Add(new ProductionLevel() { Id = 5, name = "[[[Unknown]]]" });
 
             context.Options.Add(new Option() { Id = 0, name = "[[[11 towers]]]" });
-            context.Options.Add(new Option() { Id = 1, name = "[[[18 towers]]]" });
+            context.Options.Add(new Option() { Id = 1, name = "[[[16 towers]]]" });
             context.Options.Add(new Option() { Id = 2, name = "[[[24 towers]]]" });
             context.Options.Add(new Option() { Id = 3, name = "[[[36 towers]]]" });
             context.Options.Add(new Option() { Id = 4, name = "[[[Solar panels]]]" });

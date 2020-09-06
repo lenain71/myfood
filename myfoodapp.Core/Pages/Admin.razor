@@ -3,10 +3,10 @@
 <div class="container" style="padding: 20px;">
     <div class="row">
         <div class="col">
-            <h1>Settings</h1>
+            <h3>Settings</h3>
             Configure your local parameters
 
-                <h4>Enable Connectivity (ProdUnitId = @userSettings.productionSiteId) </h4>
+                <p>Enable Connectivity (ProdUnitId = @userSettings.productionSiteId) </p>
                 <RadzenSelectBar @bind-Value="isSigfoxConnectivityType" TValue="bool" Style="margin-bottom: 20px;">
                     <Items>
                         <RadzenSelectBarItem Text="SIGFOX" Value="true" />
@@ -14,7 +14,7 @@
                     </Items>
                 </RadzenSelectBar>
 
-                <h4>Sigfox Hardware Version</h4>
+                <p>Sigfox Hardware Version</p>
                 <RadzenSelectBar @bind-Value="isSigfoxVersionOne" TValue="bool" Style="margin-bottom: 20px;">
                     <Items>
                         <RadzenSelectBarItem Text="v.1" Value="true" />
@@ -22,7 +22,7 @@
                     </Items>
                 </RadzenSelectBar>
 
-                <h4>Debug LEDs</h4>
+                <p>Debug LEDs</p>
                 <RadzenSelectBar @bind-Value="userSettings.isDebugLedEnable" TValue="bool" Style="margin-bottom: 20px;">
                     <Items>
                         <RadzenSelectBarItem Text="ON" Value="true" />
@@ -30,7 +30,7 @@
                     </Items>
                 </RadzenSelectBar>
 
-                <h4>Diagnostic Mode</h4>
+                <p>Diagnostic Mode</p>
                 <RadzenSelectBar @bind-Value="userSettings.isDiagnosticModeEnable" TValue="bool" Style="margin-bottom: 20px;">
                     <Items>
                         <RadzenSelectBarItem Text="ON" Value="true" />
@@ -38,7 +38,7 @@
                     </Items>
                 </RadzenSelectBar>
 
-                <h4>Air Temperature | Humidity sensor</h4>
+                <p>Air Temperature | Humidity sensor</p>
                 <RadzenSelectBar @bind-Value="userSettings.isTempHumiditySensorEnable" TValue="bool"  Style="margin-bottom: 20px;">
                     <Items>
                         <RadzenSelectBarItem Text="ON" Value="true" />
@@ -49,7 +49,7 @@
                 <br/>
                 <RadzenButton Click="@((args) => SaveSettingsClick(args))" Text="Save Settings" style="width:100%; margin:40px"/>
 
-                <h4>Set Internal Clock</h4>
+                <p>Set Internal Clock</p>
                 Current Clock : @dateTimeValue
 
                 <RadzenDatePicker TValue="DateTime?" @bind-Value="dateTimeValue" ShowTime="true" ShowSeconds="true" HoursStep="1" MinutesStep="10" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
@@ -58,13 +58,17 @@
         </div>
 
         <div class="col">
-            <h1>Admin Console</h1>
+            <h3>Admin Console</h3>
 
-            <RadzenButton Click="@((args) => SetPHCalibrationClick(args))" Text="Set PH Calibration to 7" style="width:100%; margin:40px"/>
+            <RadzenButton Click="@((args) => SetPHCalibrationClick(args))" Text="Set PH Calibration to 7" style="width:100%; margin:20px"/>
             
-            <RadzenButton Click="@((args) => ResetCalibrationClick(args))" Text="Reset to Factory Settings" style="width:100%; margin:40px"/>
+            <RadzenButton Click="@((args) => PerformUnitTestClick(args))" Text="Perform Unit Test" style="width:100%; margin:20px"/>
 
-            <RadzenButton Click="@((args) => ClearDataSettingsClick(args))" Text="Clear Data, Settings and Reboot" style="width:100%; margin:40px"/>
+            <RadzenButton Click="@((args) => ResetCalibrationClick(args))" Text="Reset to Factory Settings" style="width:100%; margin:20px"/>
+
+            <RadzenButton Click="@((args) => ClearDataSettingsClick(args))" Text="Clear Data, Settings" style="width:100%; margin:20px"/>
+
+            <RadzenButton Click="@((args) => RebootAppClick(args))" Text="Reboot App" style="width:100%; margin:20px"/>
         </div>
     </div>
 </div>
@@ -98,7 +102,6 @@
     void SaveSettingsClick(MouseEventArgs args)
     {
         var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
-
         var lg = LogManager.GetInstance;
 
         EventHandler handler = null;
@@ -173,8 +176,8 @@
 
     void SetPHCalibrationClick(MouseEventArgs args)
     {
-        var logModel = LogManager.GetInstance;
-        logModel.AppendLog(Log.CreateLog("Set pH to 7 started", LogType.Information));
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Set pH to 7 started", LogType.Information));
 
         var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
 
@@ -182,7 +185,6 @@
 
         handler = (sender, eventArgs) =>
         {
-            var lg = LogManager.GetInstance;
             var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
             mesureBackgroundTask.Completed -= handler;
 
@@ -206,11 +208,16 @@
 
         StateHasChanged();
     }
+ 
+    void PerformUnitTestClick(MouseEventArgs args)
+    {
+
+    }
 
     void ResetCalibrationClick(MouseEventArgs args)
     {
-        var logModel = LogManager.GetInstance;
-        logModel.AppendLog(Log.CreateLog("Reset Calibration started", LogType.Information));
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Reset Calibration started", LogType.Information));
 
         var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
 
@@ -218,7 +225,6 @@
 
         handler = (sender, eventArgs) =>
         {
-            var lg = LogManager.GetInstance;
             var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
             mesureBackgroundTask.Completed -= handler;
 
@@ -245,8 +251,8 @@
 
     void ClearDataSettingsClick(MouseEventArgs args)
     {
-        var logModel = LogManager.GetInstance;
-        logModel.AppendLog(Log.CreateLog("Clear Data and Settings started", LogType.Information));
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Clear Data and Settings started", LogType.Information));
 
         var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
 
@@ -254,7 +260,6 @@
 
         handler = (sender, eventArgs) =>
         {
-            var lg = LogManager.GetInstance;
             var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
             mesureBackgroundTask.Completed -= handler;
 
@@ -263,9 +268,9 @@
                 var strDb0 = "sudo rm /home/pi/share/myfoodapp.Core/myfood.db".Bash();
                 var strDb1 = "sudo rm /home/pi/share/myfoodapp.Core/myfood.db-shm".Bash();
                 var strDb2 = "sudo rm /home/pi/share/myfoodapp.Core/myfood.db-wal".Bash();
-                var strLogs = "sudo rm /home/pi/share/myfoodapp.Core/user.json".Bash();
-                var strSettings = "sudo rm -rf /home/pi/share/myfoodapp.Core/Logs".Bash();
-                var strRestartApp = "sudo shutdown -h now".Bash();
+                var strSettings = "sudo rm /home/pi/share/myfoodapp.Core/user.json".Bash();
+                var strLogs = "sudo rm -rf /home/pi/share/myfoodapp.Core/Logs".Bash();
+                var strRestartApp = "sudo reboot".Bash();
             }
             catch (Exception ex)
             {
@@ -282,5 +287,40 @@
 
         StateHasChanged();
     }
+
+     void RebootAppClick(MouseEventArgs args)
+    {
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Clear Data and Settings started", LogType.Information));
+
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                var strRestartApp = "sudo reboot".Bash();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Clear Data and Settings", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Clear Data and Settings ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+
+        StateHasChanged();
+    }
+
 
 }

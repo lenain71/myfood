@@ -22,7 +22,7 @@ namespace myfoodapp.Core.Business
 
             decimal capt = 0;
 
-            for(int i = 0; i < 20; i++)
+            for(int i = 0; i < 30; i++)
             {
                 Task.Run(async() => 
                     {  

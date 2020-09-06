@@ -1,4 +1,5 @@
 using myfoodapp.Core.Model;
+using myfoodapp.Core.Common;
 using System;
 using System.Threading.Tasks;
 using System.Device.I2c;
@@ -26,7 +27,7 @@ namespace myfoodapp.Core.Business
                 return instance;
             }
         }
-
+        private LogManager lg = LogManager.GetInstance;
         public bool IsConnected
         {
             get
@@ -80,6 +81,9 @@ namespace myfoodapp.Core.Business
         /// </param>
         public HumidityTemperatureManager()
         {
+            lg.AppendLog(Log.CreateLog("Set Air/Hum Register", LogType.Information));
+            ("sudo i2cset -y 1 0x40 0xE6 0x33").Bash();
+
             IsConnected = false;
         }
 

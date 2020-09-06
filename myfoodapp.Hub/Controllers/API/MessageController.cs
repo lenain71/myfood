@@ -123,7 +123,7 @@ namespace myfoodapp.Hub.Controllers.Api
                 var airTempContent = content.Substring(16, 4).Insert(3, ".");
                 var airHumidityContent = content.Substring(20, 4).Insert(3, ".");
 
-                if(!(phContent.Contains("a") || phContent.Contains("A")))
+                if(!(phContent.Contains("a") || phContent.Contains("A") || phContent.Contains("B") || phContent.Contains("C")))
                 {
                     decimal pHvalue = 0;
                     if(decimal.TryParse(phContent, style, culture, out pHvalue))
@@ -133,12 +133,12 @@ namespace myfoodapp.Hub.Controllers.Api
                     }
                     else
                     {
-                        dbLog.Logs.Add(Log.CreateLog("Error on Convert pH value", Log.LogType.Warning));
+                        dbLog.Logs.Add(Log.CreateLog(String.Format("Error on Convert pH value - {0} - {1}", currentProductionUnit.reference, pHvalue), Log.LogType.Warning));
                         dbLog.SaveChanges();
                     }     
                 }
 
-                if (!(waterTempContent.Contains("a") || waterTempContent.Contains("A")))
+                if (!(waterTempContent.Contains("a") || waterTempContent.Contains("A") || waterTempContent.Contains("B") || waterTempContent.Contains("C")))
                 {
                     decimal waterTempvalue = 0;
                     if (decimal.TryParse(waterTempContent, style, culture, out waterTempvalue))
@@ -148,42 +148,42 @@ namespace myfoodapp.Hub.Controllers.Api
                     }
                     else
                     {
-                        dbLog.Logs.Add(Log.CreateLog("Error on Convert water temp. value", Log.LogType.Warning));
+                        dbLog.Logs.Add(Log.CreateLog(String.Format("Error on Convert water temp value - {0} - {1}", currentProductionUnit.reference, waterTempvalue), Log.LogType.Warning));
                         dbLog.SaveChanges();
                     }
                 }
 
-                if (!(dissolvedOxyContent.Contains("a") || dissolvedOxyContent.Contains("A")))
-                {
-                    decimal DOvalue = 0;
-                    if (decimal.TryParse(dissolvedOxyContent, style, culture, out DOvalue))
-                    {
-                        currentMeasures.DOvalue = DOvalue;
-                        db.Measures.Add(new Measure() { captureDate = date, productionUnit = currentProductionUnit, sensor = dissolvedOxySensor, value = DOvalue });
-                    }
-                    else
-                    {
-                        dbLog.Logs.Add(Log.CreateLog("Error on Convert dissolved oxy. value", Log.LogType.Warning));
-                        dbLog.SaveChanges();
-                    }
-                }
+                //if (!(dissolvedOxyContent.Contains("a") || dissolvedOxyContent.Contains("A")))
+                //{
+                //    decimal DOvalue = 0;
+                //    if (decimal.TryParse(dissolvedOxyContent, style, culture, out DOvalue))
+                //    {
+                //        currentMeasures.DOvalue = DOvalue;
+                //        db.Measures.Add(new Measure() { captureDate = date, productionUnit = currentProductionUnit, sensor = dissolvedOxySensor, value = DOvalue });
+                //    }
+                //    else
+                //    {
+                //        dbLog.Logs.Add(Log.CreateLog("Error on Convert dissolved oxy. value", Log.LogType.Warning));
+                //        dbLog.SaveChanges();
+                //    }
+                //}
 
-                if (!(orpContent.Contains("a") || orpContent.Contains("A")))
-                {
-                    decimal ORPvalue = 0;
-                    if (decimal.TryParse(orpContent, style, culture, out ORPvalue))
-                    {
-                        currentMeasures.ORPvalue = ORPvalue;
-                        db.Measures.Add(new Measure() { captureDate = date, productionUnit = currentProductionUnit, sensor = ORPSensor, value = ORPvalue });
-                    }
-                    else
-                    {
-                        dbLog.Logs.Add(Log.CreateLog("Error on Convert ORP value", Log.LogType.Warning));
-                        dbLog.SaveChanges();
-                    }
-                }
+                //if (!(orpContent.Contains("a") || orpContent.Contains("A")))
+                //{
+                //    decimal ORPvalue = 0;
+                //    if (decimal.TryParse(orpContent, style, culture, out ORPvalue))
+                //    {
+                //        currentMeasures.ORPvalue = ORPvalue;
+                //        db.Measures.Add(new Measure() { captureDate = date, productionUnit = currentProductionUnit, sensor = ORPSensor, value = ORPvalue });
+                //    }
+                //    else
+                //    {
+                //        dbLog.Logs.Add(Log.CreateLog("Error on Convert ORP value", Log.LogType.Warning));
+                //        dbLog.SaveChanges();
+                //    }
+                //}
 
-                if (!(airTempContent.Contains("a") || airTempContent.Contains("A")))
+                if (!(airTempContent.Contains("a") || airTempContent.Contains("A") || airTempContent.Contains("B") || airTempContent.Contains("C")))
                 {
                     decimal airTempvalue = 0;
                     if (decimal.TryParse(airTempContent, style, culture, out airTempvalue))
@@ -193,12 +193,12 @@ namespace myfoodapp.Hub.Controllers.Api
                     }
                     else
                     {
-                        dbLog.Logs.Add(Log.CreateLog("Error on Convert air temp. value", Log.LogType.Warning));
+                        dbLog.Logs.Add(Log.CreateLog(String.Format("Error on Convert air temp value - {0} - {1}", currentProductionUnit.reference, airTempvalue), Log.LogType.Warning));
                         dbLog.SaveChanges();
                     }
                 }
 
-                if (!(airHumidityContent.Contains("a") || airHumidityContent.Contains("A")))
+                if (!(airHumidityContent.Contains("a") || airHumidityContent.Contains("A") || airHumidityContent.Contains("B") || airHumidityContent.Contains("C")))
                 {
                     decimal humidityvalue = 0;
                     if (decimal.TryParse(airHumidityContent, style, culture, out humidityvalue))
@@ -208,7 +208,7 @@ namespace myfoodapp.Hub.Controllers.Api
                     }
                     else
                     {
-                        dbLog.Logs.Add(Log.CreateLog("Error on Convert humidity value", Log.LogType.Warning));
+                        dbLog.Logs.Add(Log.CreateLog(String.Format("Error on Convert air hum value - {0} - {1}", currentProductionUnit.reference, humidityvalue), Log.LogType.Warning));
                         dbLog.SaveChanges();
                     }
                 }
