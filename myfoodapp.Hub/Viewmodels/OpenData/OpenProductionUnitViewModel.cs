@@ -23,6 +23,12 @@ namespace myfoodapp.Hub.Models.OpenData
         public int pioneerCitizenNumber { get; set; }
     }
 
+    public class SecureProductionUnitViewModel : OpenProductionUnitViewModel
+    {
+        public string pionnerCitizenOffice365Account { get; set; }
+    }
+
+
     public class OpenOptionViewModel
     {
         public int Id { get; set; }

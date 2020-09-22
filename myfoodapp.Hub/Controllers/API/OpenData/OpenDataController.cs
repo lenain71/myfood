@@ -25,6 +25,20 @@ namespace myfoodapp.Hub.Controllers.Api
         }
 
         [HttpGet]
+        [Route("opendata/productionunits/{User}")]
+        [CacheOutput(ClientTimeSpan = 43200, ServerTimeSpan = 100)]
+        [Authorize]
+        public List<SecureProductionUnitViewModel> GetByUser(string User)
+        {
+            var db = new ApplicationDbContext();
+            var openDataService = new OpenDataService(db);
+
+            var byUser = openDataService.GetByUser(User);
+
+            return byUser.ToList();
+        }
+
+        [HttpGet]
         [Route("opendata/productionunits/{Id:int}")]
         [CacheOutput(ClientTimeSpan = 43200, ServerTimeSpan = 100)]
         public List<OpenProductionUnitViewModel> GetById(int Id)
