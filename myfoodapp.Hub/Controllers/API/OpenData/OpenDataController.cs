@@ -1,10 +1,12 @@
 ﻿using myfoodapp.Hub.Business;
 using myfoodapp.Hub.Models;
 using myfoodapp.Hub.Models.OpenData;
+using myfoodapp.Hub.Providers;
 using myfoodapp.Hub.Services.OpenData;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using WebApi.OutputCache.V2;
 
 namespace myfoodapp.Hub.Controllers.Api
@@ -28,6 +30,7 @@ namespace myfoodapp.Hub.Controllers.Api
         [Route("opendata/productionunits/{User}")]
         [CacheOutput(ClientTimeSpan = 43200, ServerTimeSpan = 100)]
         [Authorize]
+        [ExternalCustomCORS]
         public List<SecureProductionUnitViewModel> GetByUser(string User)
         {
             var db = new ApplicationDbContext();

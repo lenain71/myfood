@@ -49,21 +49,30 @@ namespace myfoodapp.Hub.Services.OpenData
                 .OrderBy(m => m.startDate)
                 .Where(pu => pu.owner.office365Account.ToLower() == userMail.ToLower()).Select(pu => new SecureProductionUnitViewModel
                 {
-                Id = pu.Id,
-                startDate = pu.startDate,
-                locationLatitude = pu.locationLatitude,
-                locationLongitude = pu.locationLongitude,
-                version = pu.version,
-                info = pu.info,
-                //options = pu.options,
-                lastMeasureReceived = pu.lastMeasureReceived,
-                productionUnitType = pu.productionUnitType.name,
-                hydroponicType = pu.hydroponicType.name,
-                productionUnitStatus = pu.productionUnitStatus.name,
-                pionnerCitizenOffice365Account = pu.owner.office365Account,
-                pioneerCitizen = pu.owner.pioneerCitizenName,
-                pioneerCitizenNumber = pu.owner.pioneerCitizenNumber
-            }).ToList();
+                    Id = pu.Id,
+                    startDate = pu.startDate,
+                    locationLatitude = pu.locationLatitude,
+                    locationLongitude = pu.locationLongitude,
+                    version = pu.version,
+                    info = pu.info,
+                    lastMeasureReceived = pu.lastMeasureReceived,
+                    productionUnitType = pu.productionUnitType.name,
+                    hydroponicType = pu.hydroponicType.name,
+                    productionUnitStatus = pu.productionUnitStatus.name,
+                    pionnerCitizenOffice365Account = pu.owner.office365Account,
+                    pioneerCitizen = pu.owner.pioneerCitizenName,
+                    pioneerCitizenNumber = pu.owner.pioneerCitizenNumber,
+                    picturePath = pu.picturePath
+                }).ToList();
+
+            foreach (var res in result)
+            {
+                var option = entities.OptionLists.Include(o => o.productionUnit).Include(o => o.option)
+                    .Where(o => o.productionUnit.Id == res.Id)
+                    .Select(o => o.option).ToList();
+
+                res.options = option;
+            }
 
             return result;
         }
