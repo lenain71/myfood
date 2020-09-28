@@ -1,0 +1,55 @@
+@page "/performtest"
+
+<div class="container" style="padding: 20px;">
+    <div class="row">
+        
+        <div class="col">
+        <h1>Integration Testing</h1>
+        
+            
+        </div>
+
+        <div class="col">
+           
+        </div>
+    </div>
+</div>
+
+@code {
+
+    protected override void OnInitialized()
+    {  
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Integreation Testing started", LogType.Information));
+
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                SigfoxIntegrationTestingManager instance = new SigfoxIntegrationTestingManager();
+                instance.Run();
+                
+                mesureBackgroundTask.Run();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Integreation Testing", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Integreation Testing ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+    }
+
+}

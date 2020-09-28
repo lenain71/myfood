@@ -510,6 +510,7 @@ namespace myfoodapp.Core.Business
                     var boolMeasure_1 = Decimal.TryParse(strResult.ToString().Replace("\r", "")
                                                                             .Replace(answersSleepMode, "")
                                                                             .Replace(answersWakeUpMode, ""), out capturedMesure);
+                                                                            
                     sumCapturedMesure += capturedMesure;
                     strResult.Clear();
                 }
@@ -577,7 +578,7 @@ namespace myfoodapp.Core.Business
             string result = string.Empty;
 
             serialPort.WriteLine(command);
-            await Task.Delay(1000);
+            await Task.Delay(2000);
             result = serialPort.ReadExisting();
 
             Console.WriteLine(result);

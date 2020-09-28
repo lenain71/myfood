@@ -70,7 +70,14 @@ namespace myfoodapp.Core.Business
         }
         public void Stop()
         {
-            bw.CancelAsync();
+            try
+            {
+                bw.CancelAsync();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Stop BackGround Task", ex));
+            }       
         }
         private void Bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {

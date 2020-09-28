@@ -2,7 +2,12 @@
 
 <div class="container" style="padding: 20px;">
     <div class="row">
-        <div class="col">
+
+        <SpinLoader IsLoading="@isLoading">
+         <ContentTemplate>
+
+            <div class="col">
+
             <h3>Settings</h3>
             Configure your local parameters
 
@@ -70,10 +75,15 @@
 
             <RadzenButton Click="@((args) => RebootAppClick(args))" Text="Reboot App" style="width:100%; margin:20px"/>
         </div>
+
+         </ContentTemplate>
+        </SpinLoader>
+       
     </div>
 </div>
 
 @code {
+    bool isLoading = false;
     bool isSigfoxConnectivityType = false;
     bool isSigfoxVersionOne = false;
     DateTime? dateTimeValue = DateTime.Now;
@@ -99,10 +109,16 @@
         }
     }
 
-    void SaveSettingsClick(MouseEventArgs args)
+    async Task SaveSettingsClick(MouseEventArgs args)
     {
         var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
         var lg = LogManager.GetInstance;
+
+        isLoading = true;
+        //Task.Delay(2000);
+        await Task.Delay(3000);
+
+        isLoading = false;
 
         EventHandler handler = null;
 
@@ -117,6 +133,7 @@
                 userSettingsManager.SyncUserSettings(userSettings);
 
                 mesureBackgroundTask.Run();
+                
             }
             catch (Exception ex)
             {
@@ -124,7 +141,8 @@
             }
             finally
             {
-                lg.AppendLog(Log.CreateLog("Settings saved", LogType.Information));
+                isLoading = false;
+                lg.AppendLog(Log.CreateLog("Settings saved", LogType.Information));        
             }
         };
 
@@ -132,6 +150,10 @@
         mesureBackgroundTask.Stop();
         
         StateHasChanged();
+    }
+    public void ResetHardwareBackgroundTask_Completed(object sender, EventArgs e)
+    {
+        isLoading = false;
     }
 
     void SetInternalClockClick(MouseEventArgs args)
@@ -211,7 +233,39 @@
  
     void PerformUnitTestClick(MouseEventArgs args)
     {
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Integreation Testing started", LogType.Information));
 
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                SigfoxIntegrationTestingManager instance = new SigfoxIntegrationTestingManager();
+                instance.Run();
+                
+                mesureBackgroundTask.Run();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Integreation Testing", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Integreation Testing ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+
+        StateHasChanged();
     }
 
     void ResetCalibrationClick(MouseEventArgs args)
@@ -235,7 +289,7 @@
             }
             catch (Exception ex)
             {
-                lg.AppendLog(Log.CreateErrorLog("Exception Reset Calibration", ex));
+                lg.AppendLog(Log.CreateErrorLog("Exception on Reset Calibration", ex));
             }
             finally
             {
@@ -291,7 +345,7 @@
      void RebootAppClick(MouseEventArgs args)
     {
         var lg = LogManager.GetInstance;
-        lg.AppendLog(Log.CreateLog("Clear Data and Settings started", LogType.Information));
+        lg.AppendLog(Log.CreateLog("Reboot app started", LogType.Information));
 
         var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
 
@@ -308,11 +362,11 @@
             }
             catch (Exception ex)
             {
-                lg.AppendLog(Log.CreateErrorLog("Exception on Clear Data and Settings", ex));
+                lg.AppendLog(Log.CreateErrorLog("Exception on Reboot app", ex));
             }
             finally
             {
-                lg.AppendLog(Log.CreateLog("Clear Data and Settings ended", LogType.Information));
+                lg.AppendLog(Log.CreateLog("Reboot app ended", LogType.Information));
             }
         };
 
@@ -321,6 +375,4 @@
 
         StateHasChanged();
     }
-
-
 }
