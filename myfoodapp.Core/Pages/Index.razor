@@ -3,284 +3,99 @@
 <div class="container" style="padding: 20px;">
     <div class="row">
         <div class="col">
-            <h1>Settings</h1>
-            Configure your local parameters.
+            <h3>PH (last mesure : @pHLastValue)</h3>
 
-                <h4>Enable Connectivity (ProdUnitId = @userSettings.productionSiteId) </h4>
-                <RadzenSelectBar @bind-Value="isSigfoxConnectivityType" TValue="bool" Style="margin-bottom: 20px;">
-                    <Items>
-                        <RadzenSelectBarItem Text="SIGFOX" Value="true" />
-                        <RadzenSelectBarItem Text="WIFI" Value="false" />
-                    </Items>
-                </RadzenSelectBar>
+            <RadzenChart>
+                <RadzenLineSeries Smooth="@smooth" Stroke="green" Data="@pHValues" CategoryProperty="captureDate" ValueProperty="value">
+                    <RadzenMarkers MarkerType="MarkerType.Circle" Fill="green" Stroke="green" />
+                </RadzenLineSeries>
+                <RadzenCategoryAxis FormatString="{0:t}"/>
+                <RadzenValueAxis FormatString="{0:F1}">
+                    <RadzenGridLines Visible="true" />
+                </RadzenValueAxis>
+                <RadzenLegend Visible="false" />
+                <RadzenTooltipOptions Visible="false" />
+            </RadzenChart>
 
-                <h4>Sigfox Hardware Version</h4>
-                <RadzenSelectBar @bind-Value="isSigfoxVersionOne" TValue="bool" Style="margin-bottom: 20px;">
-                    <Items>
-                        <RadzenSelectBarItem Text="v.1" Value="true" />
-                        <RadzenSelectBarItem Text="v.2" Value="false" />
-                    </Items>
-                </RadzenSelectBar>
+            <h3>Air Temperature (last mesure : @airTempLastValue°C)</h3>
 
-                <h4>Debug LEDs</h4>
-                <RadzenSelectBar @bind-Value="userSettings.isDebugLedEnable" TValue="bool" Style="margin-bottom: 20px;">
-                    <Items>
-                        <RadzenSelectBarItem Text="ON" Value="true" />
-                        <RadzenSelectBarItem Text="OFF" Value="false" />
-                    </Items>
-                </RadzenSelectBar>
+            <RadzenChart>
+                <RadzenLineSeries Smooth="@smooth" Stroke="green" Data="@airTempValues" CategoryProperty="captureDate" ValueProperty="value">
+                    <RadzenMarkers MarkerType="MarkerType.Circle" Fill="green" Stroke="green" />
+                </RadzenLineSeries>
+                <RadzenCategoryAxis FormatString="{0:t}"/>
+                <RadzenValueAxis>
+                    <RadzenGridLines Visible="true" />
+                </RadzenValueAxis>
+                <RadzenLegend Visible="false" />
+                <RadzenTooltipOptions Visible="false" />
+            </RadzenChart>
 
-                <h4>Diagnostic Mode</h4>
-                <RadzenSelectBar @bind-Value="userSettings.isDiagnosticModeEnable" TValue="bool" Style="margin-bottom: 20px;">
-                    <Items>
-                        <RadzenSelectBarItem Text="ON" Value="true" />
-                        <RadzenSelectBarItem Text="OFF" Value="false" />
-                    </Items>
-                </RadzenSelectBar>
-
-                <h4>Air Temperature | Humidity sensor</h4>
-                <RadzenSelectBar @bind-Value="userSettings.isTempHumiditySensorEnable" TValue="bool"  Style="margin-bottom: 20px;">
-                    <Items>
-                        <RadzenSelectBarItem Text="ON" Value="true" />
-                        <RadzenSelectBarItem Text="OFF" Value="false" />
-                    </Items>
-                </RadzenSelectBar>
-                
-                <br/>
-                <RadzenButton Click="@((args) => SaveSettingsClick(args))" Text="Save Settings" style="width:100%; margin:40px"/>
-
-                <h4>Set Internal Clock</h4>
-                Current Clock : @dateTimeValue
-
-                <RadzenDatePicker TValue="DateTime?" @bind-Value="dateTimeValue" ShowTime="true" ShowSeconds="true" HoursStep="1" MinutesStep="10" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
-
-                <RadzenButton Click="@((args) => SetInternalClockClick(args))" Text="Save Settings" style="width:100%; margin:40px"/>
         </div>
 
         <div class="col">
-            <h1>Admin Console</h1>
+            <h3>Water Temperature (last mesure : @waterTempLastValue°C)</h3>
 
-            <RadzenButton Click="@((args) => SetPHCalibrationClick(args))" Text="Set PH Calibration to 7" style="width:100%; margin:40px"/>
-            
-            <RadzenButton Click="@((args) => ResetCalibrationClick(args))" Text="Reset to Factory Settings" style="width:100%; margin:40px"/>
+            <RadzenChart>
+                <RadzenLineSeries Smooth="@smooth" Stroke="green" Data="@waterTempValues" CategoryProperty="captureDate" ValueProperty="value">
+                    <RadzenMarkers MarkerType="MarkerType.Circle" Fill="green" Stroke="green" />
+                </RadzenLineSeries>
+                <RadzenCategoryAxis FormatString="{0:t}"/>
+                <RadzenValueAxis>
+                    <RadzenGridLines Visible="true" />
+                </RadzenValueAxis>
+                <RadzenLegend Visible="false" />
+                <RadzenTooltipOptions Visible="false" />
+            </RadzenChart>
 
-            <RadzenButton Click="@((args) => ClearDataSettingsClick(args))" Text="Clear Data, Settings and Reboot" style="width:100%; margin:40px"/>
+            <h3>Air Humidity (last mesure : @humidityLastValue%)</h3>
+
+            <RadzenChart>
+                <RadzenLineSeries Smooth="@smooth" Stroke="green" Data="@humidityValues" CategoryProperty="captureDate" ValueProperty="value">
+                    <RadzenMarkers MarkerType="MarkerType.Circle" Fill="green" Stroke="green" />
+                </RadzenLineSeries>
+                <RadzenCategoryAxis FormatString="{0:t}"/>
+                <RadzenValueAxis>
+                    <RadzenGridLines Visible="true" />
+                </RadzenValueAxis>
+                <RadzenLegend Visible="false" />
+                <RadzenTooltipOptions Visible="false" />
+            </RadzenChart>
         </div>
     </div>
 </div>
 
 @code {
-    bool isSigfoxConnectivityType = false;
-    bool isSigfoxVersionOne = false;
-    DateTime? dateTimeValue = DateTime.Now;
-    UserSettings userSettings = new UserSettings();
-    UserSettingsManager userSettingsManager = UserSettingsManager.GetInstance;
-    ClockManager clockManager = ClockManager.GetInstance;
+    bool smooth = false;
+    decimal pHLastValue = 0;
+    decimal waterTempLastValue = 0;
+    decimal airTempLastValue = 0;
+    decimal humidityLastValue = 0;
+
     protected override void OnInitialized()
-    {  
-        userSettings = userSettingsManager.GetUserSettings();
+    { 
+            var databaseModel = DatabaseModel.GetInstance;
 
-        isSigfoxConnectivityType = (userSettings.connectivityType == ConnectivityType.Sigfox) ? true : false;
-        isSigfoxVersionOne = (userSettings.sigfoxVersion == SigfoxVersion.v1) ? true : false;
-    
-        if (clockManager != null)
-        {
-            Task.Run(async() => 
+            var task= Task.Run(async () =>
             {
-                clockManager.InitClock();
-                await Task.Delay(2000);
-                dateTimeValue = clockManager.ReadDate();
-                clockManager.Dispose();
-            }).Wait();               
-        }
+                pHValues = await databaseModel.GetLastWeeksMesures(SensorTypeEnum.pH);
+                pHLastValue = await databaseModel.GetLastMesure(SensorTypeEnum.pH); 
+
+                waterTempValues = await databaseModel.GetLastWeeksMesures(SensorTypeEnum.waterTemperature);
+                waterTempLastValue = await databaseModel.GetLastMesure(SensorTypeEnum.waterTemperature); 
+
+                airTempValues = await databaseModel.GetLastWeeksMesures(SensorTypeEnum.airTemperature);
+                airTempLastValue = await databaseModel.GetLastMesure(SensorTypeEnum.airTemperature); 
+
+                humidityValues = await databaseModel.GetLastWeeksMesures(SensorTypeEnum.humidity);
+                humidityLastValue = await databaseModel.GetLastMesure(SensorTypeEnum.humidity); 
+            });
+            task.Wait();
     }
 
-    void SaveSettingsClick(MouseEventArgs args)
-    {
-        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
-
-        var lg = LogManager.GetInstance;
-
-        EventHandler handler = null;
-
-        handler = (sender, eventArgs) =>
-        {
-            mesureBackgroundTask.Completed -= handler;
-
-            try
-            {
-                userSettings.connectivityType = (isSigfoxConnectivityType == true) ? ConnectivityType.Sigfox : ConnectivityType.Wifi;
-                userSettings.sigfoxVersion = (isSigfoxVersionOne == true) ? SigfoxVersion.v1 : SigfoxVersion.v2;
-                userSettingsManager.SyncUserSettings(userSettings);
-
-                mesureBackgroundTask.Run();
-            }
-            catch (Exception ex)
-            {
-                lg.AppendLog(Log.CreateErrorLog("Exception on Save Settings", ex));
-            }
-            finally
-            {
-                lg.AppendLog(Log.CreateLog("Settings saved", LogType.Information));
-            }
-        };
-
-        mesureBackgroundTask.Completed += handler;
-        mesureBackgroundTask.Stop();
-        
-        StateHasChanged();
-    }
-
-    void SetInternalClockClick(MouseEventArgs args)
-    {
-        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
-        var lg = LogManager.GetInstance;
-            
-        EventHandler handler = null;
-
-        handler = (sender, eventArgs) =>
-        {
-            mesureBackgroundTask.Completed -= handler;
-            try
-            {
-                var clockManager = ClockManager.GetInstance;
-
-                if (clockManager != null && dateTimeValue.HasValue)
-                {
-                    clockManager.InitClock();
-                    clockManager.SetDate(dateTimeValue.Value);
-                    clockManager.Dispose();
-                }
-
-                mesureBackgroundTask.Run();
-
-            }
-            catch (Exception ex)
-            {
-                lg.AppendLog(Log.CreateErrorLog("Exception on Clock Settings", ex));
-            }
-            finally
-            {
-                lg.AppendLog(Log.CreateLog("Clock setting ended", LogType.Information));
-            }
-        };
-
-        mesureBackgroundTask.Completed += handler;
-        mesureBackgroundTask.Stop();
-
-        StateHasChanged();
-    }
-
-    void SetPHCalibrationClick(MouseEventArgs args)
-    {
-        var logModel = LogManager.GetInstance;
-        logModel.AppendLog(Log.CreateLog("Set pH to 7 started", LogType.Information));
-
-        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
-
-        EventHandler handler = null;
-
-        handler = (sender, eventArgs) =>
-        {
-            var lg = LogManager.GetInstance;
-            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
-            mesureBackgroundTask.Completed -= handler;
-
-            try
-            {
-                AtlasSensorManager.GetInstance.SetCalibration(SensorTypeEnum.pH, AtlasSensorManager.CalibrationType.Mid);
-                mesureBackgroundTask.Run();
-            }
-            catch (Exception ex)
-            {
-                lg.AppendLog(Log.CreateErrorLog("Exception on Set PH to 7", ex));
-            }
-            finally
-            {
-                lg.AppendLog(Log.CreateLog("Set PH to 7 ended", LogType.Information));
-            }
-        };
-
-        mesureBackgroundTask.Completed += handler;
-        mesureBackgroundTask.Stop();
-
-        StateHasChanged();
-    }
-
-    void ResetCalibrationClick(MouseEventArgs args)
-    {
-        var logModel = LogManager.GetInstance;
-        logModel.AppendLog(Log.CreateLog("Reset Calibration started", LogType.Information));
-
-        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
-
-        EventHandler handler = null;
-
-        handler = (sender, eventArgs) =>
-        {
-            var lg = LogManager.GetInstance;
-            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
-            mesureBackgroundTask.Completed -= handler;
-
-            try
-            {
-                AtlasSensorManager.GetInstance.ResetSensorsToFactory();
-                mesureBackgroundTask.Run();
-            }
-            catch (Exception ex)
-            {
-                lg.AppendLog(Log.CreateErrorLog("Exception Reset Calibration", ex));
-            }
-            finally
-            {
-                lg.AppendLog(Log.CreateLog("Reset Calibration ended", LogType.Information));
-            }
-        };
-
-        mesureBackgroundTask.Completed += handler;
-        mesureBackgroundTask.Stop();
-
-        StateHasChanged();
-    }
-
-    void ClearDataSettingsClick(MouseEventArgs args)
-    {
-        var logModel = LogManager.GetInstance;
-        logModel.AppendLog(Log.CreateLog("Clear Data and Settings started", LogType.Information));
-
-        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
-
-        EventHandler handler = null;
-
-        handler = (sender, eventArgs) =>
-        {
-            var lg = LogManager.GetInstance;
-            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
-            mesureBackgroundTask.Completed -= handler;
-
-            try
-            {
-                var strDb0 = "sudo rm /home/pi/share/myfoodapp.Core/myfood.db".Bash();
-                var strDb1 = "sudo rm /home/pi/share/myfoodapp.Core/myfood.db-shm".Bash();
-                var strDb2 = "sudo rm /home/pi/share/myfoodapp.Core/myfood.db-wal".Bash();
-                var strLogs = "sudo rm /home/pi/share/myfoodapp.Core/user.json".Bash();
-                var strSettings = "sudo rm -rf /home/pi/share/myfoodapp.Core/Logs".Bash();
-                var strRestartApp = "sudo shutdown -h now".Bash();
-            }
-            catch (Exception ex)
-            {
-                lg.AppendLog(Log.CreateErrorLog("Exception on Clear Data and Settings", ex));
-            }
-            finally
-            {
-                lg.AppendLog(Log.CreateLog("Clear Data and Settings ended", LogType.Information));
-            }
-        };
-
-        mesureBackgroundTask.Completed += handler;
-        mesureBackgroundTask.Stop();
-
-        StateHasChanged();
-    }
+    List<Measure> pHValues = new List<Measure>();
+    List<Measure> waterTempValues = new List<Measure>();
+    List<Measure> airTempValues = new List<Measure>();
+    List<Measure> humidityValues = new List<Measure>();
 
 }

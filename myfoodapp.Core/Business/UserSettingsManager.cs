@@ -94,6 +94,9 @@ namespace myfoodapp.Core.Business
                     UserSettings userSettings = JsonSerializer.Deserialize<UserSettings>(read.ReadToEnd());
 
                     CurrentUserSettings = userSettings;
+
+                    file.Close();
+
                     return userSettings;
                 }
 
@@ -105,6 +108,8 @@ namespace myfoodapp.Core.Business
 
             if (file != null)
             {
+                File.Delete(FILE_NAME);
+
                 string strSettings;
                 var options = new JsonSerializerOptions
                 {
@@ -114,6 +119,7 @@ namespace myfoodapp.Core.Business
                 strSettings = JsonSerializer.Serialize(userSettings, options);
 
                 File.WriteAllText(FILE_NAME, strSettings);
+
             }
 
             CurrentUserSettings = userSettings;
@@ -131,7 +137,6 @@ namespace myfoodapp.Core.Business
         public string hubMessageAPI { get; set; }
         public ConnectivityType connectivityType { get; set; }
         public SigfoxVersion sigfoxVersion { get; set; }
-
     }
 
     public enum ConnectivityType

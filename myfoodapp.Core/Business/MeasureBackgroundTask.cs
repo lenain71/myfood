@@ -39,13 +39,13 @@ namespace myfoodapp.Core.Business
         }
         private MeasureBackgroundTask()
         {
-            lg.AppendLog(Log.CreateLog("Measure Service starting...", LogType.System));
+            lg.AppendLog(Log.CreateLog("Measure Service starting...", LogType.Information));
 
             userSettings = new UserSettings();
 
             userSettings = userSettingsManager.GetUserSettings();
 
-            lg.AppendLog(Log.CreateLog("UserSettings retreived", LogType.System));
+            lg.AppendLog(Log.CreateLog("UserSettings retreived", LogType.Information));
 
             //Disable Diagnostic Mode on Restart
             if(userSettings.isDiagnosticModeEnable)
@@ -65,16 +65,23 @@ namespace myfoodapp.Core.Business
             if (bw.IsBusy)
                 return;
 
-            lg.AppendLog(Log.CreateLog("Measure Service running...", LogType.System));
+            lg.AppendLog(Log.CreateLog("Measure Service running...", LogType.Information));
             bw.RunWorkerAsync();
         }
         public void Stop()
         {
-            bw.CancelAsync();
+            try
+            {
+                bw.CancelAsync();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Stop BackGround Task", ex));
+            }       
         }
         private void Bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            lg.AppendLog(Log.CreateLog("Measure Service stopping...", LogType.System));
+            lg.AppendLog(Log.CreateLog("Measure Service stopping...", LogType.Information));
             Completed?.Invoke(this, EventArgs.Empty);
         }
 
@@ -275,7 +282,7 @@ namespace myfoodapp.Core.Business
                                             using (await asyncLock.LockAsync())
                                             {
                                              await Task.Delay(1000);
-                                             capturedValue = (decimal)humTempManager.Temperature;
+                                             capturedValue = Math.Round((decimal)humTempManager.Temperature, 1);
                                              Console.WriteLine("Temp" + capturedValue);
                                              await Task.Delay(1000);
                                              await databaseModel.AddMesure(captureDateTime, capturedValue, SensorTypeEnum.airTemperature);
@@ -289,7 +296,7 @@ namespace myfoodapp.Core.Business
                                                  lg.AppendLog(Log.CreateLog(String.Format("Air Temperature captured : {0}", capturedValue), LogType.Information));
                                              
                                              await Task.Delay(1000);
-                                             capturedValue = (decimal)humTempManager.Humidity;
+                                             capturedValue = Math.Round((decimal)humTempManager.Humidity, 1);
                                              Console.WriteLine("Hum" + capturedValue);
                                              await Task.Delay(1000);    
                                              await databaseModel.AddMesure(captureDateTime, capturedValue, SensorTypeEnum.humidity);
