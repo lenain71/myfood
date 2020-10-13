@@ -1,0 +1,378 @@
+@page "/admin"
+
+<div class="container" style="padding: 20px;">
+    <div class="row">
+
+        <SpinLoader IsLoading="@isLoading">
+         <ContentTemplate>
+
+            <div class="col">
+
+            <h3>Settings</h3>
+            Configure your local parameters
+
+                <p>Enable Connectivity (ProdUnitId = @userSettings.productionSiteId) </p>
+                <RadzenSelectBar @bind-Value="isSigfoxConnectivityType" TValue="bool" Style="margin-bottom: 20px;">
+                    <Items>
+                        <RadzenSelectBarItem Text="SIGFOX" Value="true" />
+                        <RadzenSelectBarItem Text="WIFI" Value="false" />
+                    </Items>
+                </RadzenSelectBar>
+
+                <p>Sigfox Hardware Version</p>
+                <RadzenSelectBar @bind-Value="isSigfoxVersionOne" TValue="bool" Style="margin-bottom: 20px;">
+                    <Items>
+                        <RadzenSelectBarItem Text="v.1" Value="true" />
+                        <RadzenSelectBarItem Text="v.2" Value="false" />
+                    </Items>
+                </RadzenSelectBar>
+
+                <p>Debug LEDs</p>
+                <RadzenSelectBar @bind-Value="userSettings.isDebugLedEnable" TValue="bool" Style="margin-bottom: 20px;">
+                    <Items>
+                        <RadzenSelectBarItem Text="ON" Value="true" />
+                        <RadzenSelectBarItem Text="OFF" Value="false" />
+                    </Items>
+                </RadzenSelectBar>
+
+                <p>Diagnostic Mode</p>
+                <RadzenSelectBar @bind-Value="userSettings.isDiagnosticModeEnable" TValue="bool" Style="margin-bottom: 20px;">
+                    <Items>
+                        <RadzenSelectBarItem Text="ON" Value="true" />
+                        <RadzenSelectBarItem Text="OFF" Value="false" />
+                    </Items>
+                </RadzenSelectBar>
+
+                <p>Air Temperature | Humidity sensor</p>
+                <RadzenSelectBar @bind-Value="userSettings.isTempHumiditySensorEnable" TValue="bool"  Style="margin-bottom: 20px;">
+                    <Items>
+                        <RadzenSelectBarItem Text="ON" Value="true" />
+                        <RadzenSelectBarItem Text="OFF" Value="false" />
+                    </Items>
+                </RadzenSelectBar>
+                
+                <br/>
+                <RadzenButton Click="@((args) => SaveSettingsClick(args))" Text="Save Settings" style="width:100%; margin:40px"/>
+
+                <p>Set Internal Clock</p>
+                Current Clock : @dateTimeValue
+
+                <RadzenDatePicker TValue="DateTime?" @bind-Value="dateTimeValue" ShowTime="true" ShowSeconds="true" HoursStep="1" MinutesStep="10" SecondsStep="10" DateFormat="MM/dd/yyyy HH:mm" />
+
+                <RadzenButton Click="@((args) => SetInternalClockClick(args))" Text="Save Settings" style="width:100%; margin:40px"/>
+        </div>
+
+        <div class="col">
+            <h3>Admin Console</h3>
+
+            <RadzenButton Click="@((args) => SetPHCalibrationClick(args))" Text="Set PH Calibration to 7" style="width:100%; margin:20px"/>
+            
+            <RadzenButton Click="@((args) => PerformUnitTestClick(args))" Text="Perform Unit Test" style="width:100%; margin:20px"/>
+
+            <RadzenButton Click="@((args) => ResetCalibrationClick(args))" Text="Reset to Factory Settings" style="width:100%; margin:20px"/>
+
+            <RadzenButton Click="@((args) => ClearDataSettingsClick(args))" Text="Clear Data, Settings" style="width:100%; margin:20px"/>
+
+            <RadzenButton Click="@((args) => RebootAppClick(args))" Text="Reboot App" style="width:100%; margin:20px"/>
+        </div>
+
+         </ContentTemplate>
+        </SpinLoader>
+       
+    </div>
+</div>
+
+@code {
+    bool isLoading = false;
+    bool isSigfoxConnectivityType = false;
+    bool isSigfoxVersionOne = false;
+    DateTime? dateTimeValue = DateTime.Now;
+    UserSettings userSettings = new UserSettings();
+    UserSettingsManager userSettingsManager = UserSettingsManager.GetInstance;
+    ClockManager clockManager = ClockManager.GetInstance;
+    protected override void OnInitialized()
+    {  
+        userSettings = userSettingsManager.GetUserSettings();
+
+        isSigfoxConnectivityType = (userSettings.connectivityType == ConnectivityType.Sigfox) ? true : false;
+        isSigfoxVersionOne = (userSettings.sigfoxVersion == SigfoxVersion.v1) ? true : false;
+    
+        if (clockManager != null)
+        {
+            Task.Run(async() => 
+            {
+                clockManager.InitClock();
+                await Task.Delay(2000);
+                dateTimeValue = clockManager.ReadDate();
+                clockManager.Dispose();
+            }).Wait();               
+        }
+    }
+
+    async Task SaveSettingsClick(MouseEventArgs args)
+    {
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+        var lg = LogManager.GetInstance;
+
+        isLoading = true;
+        //Task.Delay(2000);
+        await Task.Delay(3000);
+
+        isLoading = false;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                userSettings.connectivityType = (isSigfoxConnectivityType == true) ? ConnectivityType.Sigfox : ConnectivityType.Wifi;
+                userSettings.sigfoxVersion = (isSigfoxVersionOne == true) ? SigfoxVersion.v1 : SigfoxVersion.v2;
+                userSettingsManager.SyncUserSettings(userSettings);
+
+                mesureBackgroundTask.Run();
+                
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Save Settings", ex));
+            }
+            finally
+            {
+                isLoading = false;
+                lg.AppendLog(Log.CreateLog("Settings saved", LogType.Information));        
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+        
+        StateHasChanged();
+    }
+    public void ResetHardwareBackgroundTask_Completed(object sender, EventArgs e)
+    {
+        isLoading = false;
+    }
+
+    void SetInternalClockClick(MouseEventArgs args)
+    {
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+        var lg = LogManager.GetInstance;
+            
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            mesureBackgroundTask.Completed -= handler;
+            try
+            {
+                var clockManager = ClockManager.GetInstance;
+
+                if (clockManager != null && dateTimeValue.HasValue)
+                {
+                    clockManager.InitClock();
+                    clockManager.SetDate(dateTimeValue.Value);
+                    clockManager.Dispose();
+                }
+
+                mesureBackgroundTask.Run();
+
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Clock Settings", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Clock setting ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+
+        StateHasChanged();
+    }
+
+    void SetPHCalibrationClick(MouseEventArgs args)
+    {
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Set pH to 7 started", LogType.Information));
+
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                AtlasSensorManager.GetInstance.SetCalibration(SensorTypeEnum.pH, AtlasSensorManager.CalibrationType.Mid);
+                mesureBackgroundTask.Run();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Set PH to 7", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Set PH to 7 ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+
+        StateHasChanged();
+    }
+ 
+    void PerformUnitTestClick(MouseEventArgs args)
+    {
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Integreation Testing started", LogType.Information));
+
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                SigfoxIntegrationTestingManager instance = new SigfoxIntegrationTestingManager();
+                instance.Run();
+                
+                mesureBackgroundTask.Run();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Integreation Testing", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Integreation Testing ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+
+        StateHasChanged();
+    }
+
+    void ResetCalibrationClick(MouseEventArgs args)
+    {
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Reset Calibration started", LogType.Information));
+
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                AtlasSensorManager.GetInstance.ResetSensorsToFactory();
+                mesureBackgroundTask.Run();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Reset Calibration", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Reset Calibration ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+
+        StateHasChanged();
+    }
+
+    void ClearDataSettingsClick(MouseEventArgs args)
+    {
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Clear Data and Settings started", LogType.Information));
+
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                var strDb0 = "sudo rm /home/pi/share/myfoodapp.Core/myfood.db".Bash();
+                var strDb1 = "sudo rm /home/pi/share/myfoodapp.Core/myfood.db-shm".Bash();
+                var strDb2 = "sudo rm /home/pi/share/myfoodapp.Core/myfood.db-wal".Bash();
+                var strSettings = "sudo rm /home/pi/share/myfoodapp.Core/user.json".Bash();
+                var strLogs = "sudo rm -rf /home/pi/share/myfoodapp.Core/Logs".Bash();
+                var strRestartApp = "sudo reboot".Bash();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Clear Data and Settings", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Clear Data and Settings ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+
+        StateHasChanged();
+    }
+
+     void RebootAppClick(MouseEventArgs args)
+    {
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Reboot app started", LogType.Information));
+
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                var strRestartApp = "sudo reboot".Bash();
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Reboot app", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Reboot app ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+
+        StateHasChanged();
+    }
+}

@@ -54,7 +54,6 @@ namespace myfoodapp.Core
                     //var bw = new BackgroundManager(); 
                     var bw = MeasureBackgroundTask.GetInstance;
                     bw.Run();
-  
                 });
     }
 }

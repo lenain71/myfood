@@ -1,0 +1,101 @@
+@page "/logs"
+@inject IJSRuntime js
+
+<div class="container" style="padding: 20px;">
+    <div class="row">    
+        <div class="col">
+        <h1>Current Logs</h1>
+            <RadzenTextArea Disabled="true" @bind-Value="@value"  Style="margin-bottom: 20px; width: 100%; height: 600px" />
+        </div>
+        <div class="col">
+        <h1>Manage Logs</h1>
+            <RadzenButton Click="@((args) => ClearLogsClick(args))" Text="Clear Logs" style="width:100%; margin:10px"/>
+            <RadzenButton Click="@((args) => DownloadLogsClick(args))" Text="Download Logs" style="width:100%; margin:10px"/>
+        </div>
+    </div>
+</div>
+
+@code {
+    string value;
+
+    protected override void OnInitialized()
+    {
+        var lg = LogManager.GetInstance;
+        
+        try
+        {
+            if(!Directory.Exists("/home/pi/share/myfoodapp.Core/Logs"))
+            return;
+
+        var fileLst = Directory.GetFiles("/home/pi/share/myfoodapp.Core/Logs","*.log", 
+                                        SearchOption.AllDirectories);
+
+        var lastestFileName = String.Empty;
+        DateTime lastestFileNameDate = new DateTime();
+
+        foreach (var file in fileLst)
+        {
+            lastestFileName = file;
+            var fileDate = File.GetLastWriteTime(file);
+
+            if(fileDate > lastestFileNameDate)
+            {
+                lastestFileNameDate = fileDate;
+                lastestFileName = file;
+            }
+        }
+
+        if(File.Exists(lastestFileName))
+        {
+            value = File.OpenText(lastestFileName).ReadToEnd();
+        }  
+        }
+        catch (Exception ex)
+        {
+            lg.AppendLog(Log.CreateErrorLog("Exception on Logs Page Init", ex));
+        } 
+
+    }
+
+    void ClearLogsClick(MouseEventArgs args)
+    {
+        var lg = LogManager.GetInstance;
+        lg.AppendLog(Log.CreateLog("Clear Logs started", LogType.Information));
+
+        var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+
+        EventHandler handler = null;
+
+        handler = (sender, eventArgs) =>
+        {
+            var mesureBackgroundTask = MeasureBackgroundTask.GetInstance;
+            mesureBackgroundTask.Completed -= handler;
+
+            try
+            {
+                var strLogs = "sudo rm -rf /home/pi/share/myfoodapp.Core/Logs".Bash();
+                mesureBackgroundTask.Run();
+                value = String.Empty;
+            }
+            catch (Exception ex)
+            {
+                lg.AppendLog(Log.CreateErrorLog("Exception on Clear Logs", ex));
+            }
+            finally
+            {
+                lg.AppendLog(Log.CreateLog("Clear Logs ended", LogType.Information));
+            }
+        };
+
+        mesureBackgroundTask.Completed += handler;
+        mesureBackgroundTask.Stop();
+
+        StateHasChanged();
+    }
+
+    Task DownloadLogsClick(MouseEventArgs args)
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
+        return FileUtil.SaveAs(js, "Logs.txt", bytes);
+    }
+}

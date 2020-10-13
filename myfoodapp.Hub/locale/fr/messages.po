@@ -1,8 +1,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
+
 "POT-Creation-Date: 2020-09-22 15:43+02:00\n"
 "PO-Revision-Date: 2020-09-22 15:43+02:00\n"
+
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -17,8 +19,8 @@ msgid "11 towers"
 msgstr "11 tours"
 
 #: Migrations\Configuration.cs:141
-msgid "18 towers"
-msgstr "18 tours"
+msgid "16 towers"
+msgstr "16 tours"
 
 #: Migrations\Configuration.cs:142
 msgid "24 towers"
@@ -4093,6 +4095,10 @@ msgstr "Courgette"
 
 #~ msgid "Add micronutriment"
 #~ msgstr "Ajout micronutriment"
+
+#~ msgid "18 towers"
+#~ msgstr "18 tours"
+
 
 #~ msgid "Add peat"
 #~ msgstr "Ajout tourbe"
